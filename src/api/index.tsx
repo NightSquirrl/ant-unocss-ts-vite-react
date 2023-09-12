@@ -1,60 +1,61 @@
 import { message } from "antd";
-import axios, { AxiosInstance, AxiosResponse, CancelTokenSource } from "axios";
+import axios from 'axios'
 
-
-
-/**
- * @description:  请求拦截器
- * @return {*}
- */
-axios.interceptors.request.use(config => {
-    // 在发送请求前做些什么
-    return config;
-}, err => {
-    // 在请求错误的时候的逻辑处理
-    return Promise.reject(err)
-});
-
-axios.interceptors.response.use((config: AxiosResponse<AxiosBaseResponseType, any>) => {
-    if (config.data.code !== 2000) {
-        // * 提示报错信息
-        message.error(config.data.message);
-        throw new Error(config.data.message);
-    }
-    /**
-     * @description: 正常的返回
-     */
-    return config;
+export const http = axios.create({
+    baseURL: import.meta.env.VITE_API_BASE_URL,
 })
-/**
- * @description: axios实例的相关配置
- * @return {*}
- */
-interface MyAxiosInstance extends AxiosInstance {
-    cancelToken?: CancelTokenSource;
-    cancel?: Function;
-}
 
-let https: MyAxiosInstance = axios.create({
-    baseURL: '', //请求的域名（基本地址）
-    timeout: 2000, //请求的超时时长，单位毫秒，默认。
-    url: '/data.json', //请求路径
-    method: 'get', //请求方法
-    headers: {
-        token: ''
-    }, //设置请求头
-    params: {
+// 添加请求拦截器
+http.interceptors.request.use(
+  function (config) {
+      // 在发送请求之前做些什么
+      return config
+  },
+  function (error) {
+      message.warning(error.message ?? '未知请求错误')
+      // 对请求错误做些什么
+      return Promise.reject(error)
+  }
+)
 
-    },//将请求参数拼接到url上
-    data: {
+// 添加响应拦截器
+http.interceptors.response.use(
+  function (response) {
+      // 2xx 范围内的状态码都会触发该函数。
+      // 对响应数据进行格式化
+      if (response.data) {
+          return response.data
+      }
+      return response
+  },
+  function (error) {
+      const status = error.response?.status
+      let { msg, message } = error.response?.data ?? {}
 
-    }, //将请求参数放置到请求体里
-    cancelToken: new axios.CancelToken(cancel => {
-        // 将 cancel 函数保存在实例变量中
-        https.cancel = cancel;
-    }),
-});
+      if (!msg && message) {
+          msg = message
+      }
 
+      if (!msg) {
+          switch (status) {
+              case 400:
+                  msg = '参数错误'
+                  break
+              case 500:
+                  msg = '服务端错误'
+                  break
+              case 404:
+                  msg = '路由未找到'
+                  break
+              default:
+                  msg = error.message ?? '未知响应错误'
+                  break
+          }
+      }
 
-
-export default https;
+      message.warning(msg)
+      // 超出 2xx 范围的状态码都会触发该函数。
+      // 对响应错误做点什么
+      return Promise.reject(error)
+  }
+)
