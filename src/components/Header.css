@@ -1,0 +1,13 @@
+.header-left:nth-child(2) {
+  background: linear-gradient(90deg, #ff6c6c 20%, #f34395 40%, #001aff 60%, #2200ff 80%);
+  animation: navbarGalleryTextAnm 1.4s linear infinite;
+  -webkit-text-fill-color: transparent;
+  -webkit-background-clip: text;
+  background-size: 200% auto;
+}
+
+@keyframes navbarGalleryTextAnm {
+  to {
+    background-position: 200%;
+  }
+}
