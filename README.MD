@@ -3,7 +3,7 @@ sticky: 2
 description: vite axios unocss eslint antd ts react-router react-toastify
 title: 😤 react 脚手架封装
 tag:
-  - Vue
+  - React
 top: 1
 sidebar: true
 ---
